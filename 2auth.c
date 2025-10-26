@@ -1,8 +1,9 @@
 #include<stdio.h>
 #include<string.h>
 #include "5location.h"
-#include "4search.c"
-#include "3record.c"
+#include "4search.h"
+#include "3record.h" 
+
 void signUp(){
     char pass[50] , user[50];
     FILE *file =fopen("signup.txt","a");
@@ -31,14 +32,13 @@ void login(){
     if (strcmp(storedUser, inputUser) == 0 && strcmp(storedPass, inputPass) == 0) {
         printf("Login successful! Welcome, %s.\n", inputUser);
 
-        //small sample of location to test search module
-        struct Location a = {"Library", NULL};
-        struct Location b = {"Canteen", NULL};
-        struct Location c = {"Lab", NULL};
-        a.next = &b;
-        b.next = &c;
+        struct Location *campusMap = buildMap();
 
-        navigationMenu(&a);
+        // Optional: show the map to confirm
+        printMap(campusMap);
+
+        // Start navigation system with the map
+        navigationMenu(campusMap);
 
     } else {
         printf("Login failed! Invalid username or password.\n");

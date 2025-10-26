@@ -2,19 +2,33 @@
 #include "5location.h"
 #include "4search.h"
 
-void navigationMenu(struct Location *head) {
+void navigationMenu(struct Location *campusMap){
     int attChoice;
     do {
         printf("\n===== NAVIGATION SYSTEM =====\n");
         printf("1. Search Location\n");
+        printf("2. Show All Locations\n");
+        printf("3. Find Route Between Two Locations\n");
         printf("4. Logout\n");
         printf("Choose an option: ");
         scanf("%d", &attChoice);
 
         switch(attChoice) {
-            case 1:
-                searchPrompt(head);
+             case 1:
+                searchPrompt(campusMap);   // pass the location map
                 break;
+            case 2:
+                printMap(campusMap);       // show all connected locations
+                break;
+            case 3: {
+                char start[50], dest[50];
+                printf("Enter starting location: ");
+                scanf("%s", start);
+                printf("Enter destination location: ");
+                scanf("%s", dest);
+                findShortestPath(campusMap, start, dest); // future upgrade
+                break;
+            }
             case 4:
                 printf("Logging out...\n");
                 break;

@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include<string.h>
-#include "2auth.c"
+#include "2auth.h"
 int main(){
     int choice;
     char loggedInUser[50] = "";
