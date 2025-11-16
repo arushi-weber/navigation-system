@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "4search.h"
+#include "6navigation.h"
 
 struct Location* search(struct Location *head, const char *name) {
     struct Location *cur = head;

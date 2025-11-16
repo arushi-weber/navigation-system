@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "5location.h"
+#include "6navigation.h"
 
 static struct Location* createLocation(char *name) {
     struct Location *loc = (struct Location*)malloc(sizeof(struct Location));
@@ -81,4 +82,25 @@ struct Location* buildMap() {
     addConnection(gate2, "CSIT", 3);
 
     return gate1;
+}
+
+void printMap(struct Location *head) {
+    struct Location *temp = head;
+
+    printf("\n====== CAMPUS MAP ======\n");
+
+    while (temp != NULL) {
+        printf("%s -> ", temp->name);
+
+        struct AdjNode *conn = temp->connections;
+        while (conn != NULL) {
+            printf("%s(%d) ", conn->name, conn->distance);
+            conn = conn->next;
+        }
+        printf("\n");
+
+        temp = temp->next;
+    }
+
+    printf("========================\n");
 }

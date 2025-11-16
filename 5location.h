@@ -14,5 +14,6 @@ struct Location {
 };
 
 struct Location* buildMap();
+void printMap(struct Location *head);
 
 #endif

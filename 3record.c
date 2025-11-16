@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "5location.h"
 #include "4search.h"
+#include "6navigation.h"
+
 
 void navigationMenu(struct Location *campusMap){
     int attChoice;
@@ -23,10 +25,10 @@ void navigationMenu(struct Location *campusMap){
             case 3: {
                 char start[50], dest[50];
                 printf("Enter starting location: ");
-                scanf("%s", start);
+                scanf("%49s", start);
                 printf("Enter destination location: ");
-                scanf("%s", dest);
-                findShortestPath(campusMap, start, dest); // future upgrade
+                scanf("%49s", dest);
+                findShortestPath(campusMap, start, dest);
                 break;
             }
             case 4:

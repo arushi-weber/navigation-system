@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include "5location.h"
+#include "6navigation.h"
 #include "4search.h"
 #include "3record.h" 
 
