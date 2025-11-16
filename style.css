@@ -1,0 +1,29 @@
+window {
+    background: #0f172a;
+}
+
+button {
+    background: #2563eb;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+label {
+    color: #e5e7eb;
+    font-size: 14px;
+}
+
+entry {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #475569;
+    background: #020617;
+    color: #e5e7eb;
+}

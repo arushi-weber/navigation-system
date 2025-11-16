@@ -1,16 +1,14 @@
-// 6navigation.c
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
 #include <stdbool.h>
 #include "5location.h"
-#include "4search.h"
 #include "6navigation.h"
 
 #define INF INT_MAX
 #define MAX 50   // max number of locations
 
-// Helper: find index of a name in names[]
+// helper: index of name in names[]
 static int getIndex(const char *name, char names[][30], int count) {
     for (int i = 0; i < count; i++) {
         if (strcmp(names[i], name) == 0)
@@ -19,26 +17,23 @@ static int getIndex(const char *name, char names[][30], int count) {
     return -1;
 }
 
-// Build adjacency matrix from linked list map
+// build adjacency matrix from linked list map
 static int buildGraphMatrix(struct Location *head, int graph[MAX][MAX], char names[][30]) {
     struct Location *temp = head;
     int count = 0;
 
-    // 1) collect all node names in order
     while (temp != NULL && count < MAX) {
         strcpy(names[count], temp->name);
         count++;
         temp = temp->next;
     }
 
-    // 2) init matrix
     for (int i = 0; i < count; i++) {
         for (int j = 0; j < count; j++) {
             graph[i][j] = (i == j) ? 0 : INF;
         }
     }
 
-    // 3) fill edges from adjacency lists
     temp = head;
     int i = 0;
     while (temp != NULL && i < count) {
@@ -57,26 +52,25 @@ static int buildGraphMatrix(struct Location *head, int graph[MAX][MAX], char nam
     return count;
 }
 
-void findShortestPath(struct Location *head, const char *start, const char *end) {
-    printf("\n[DEBUG] Dijkstra shortest path called for '%s' -> '%s'\n", start, end);
-
+// core dijkstra, used by both CLI + GUI
+static int dijkstra_core(struct Location *head,
+                         const char *start,
+                         const char *end,
+                         char names[][30],
+                         int *outCount,
+                         int parentOut[MAX],
+                         int *endIndexOut,
+                         int *distOut) {
     int graph[MAX][MAX];
-    char names[MAX][30];
     int count = buildGraphMatrix(head, graph, names);
 
-    if (count == 0) {
-        printf("Map is empty.\n");
-        return;
-    }
+    if (count == 0) return 0;
 
     int startIndex = getIndex(start, names, count);
-    int endIndex   = getIndex(end, names, count);
+    int endIndex   = getIndex(end,   names, count);
 
-    if (startIndex == -1 || endIndex == -1) {
-        printf("\nInvalid locations. Please use exact names from the map.\n");
-        printf("Example: RaviCanteen, HappinessHut, Gate2, BoysHostel\n");
-        return;
-    }
+    if (startIndex == -1 || endIndex == -1)
+        return 0;
 
     int dist[MAX], parent[MAX];
     bool visited[MAX];
@@ -89,7 +83,6 @@ void findShortestPath(struct Location *head, const char *start, const char *end)
 
     dist[startIndex] = 0;
 
-    // Dijkstra
     for (int step = 0; step < count - 1; step++) {
         int min = INF, u = -1;
 
@@ -100,7 +93,7 @@ void findShortestPath(struct Location *head, const char *start, const char *end)
             }
         }
 
-        if (u == -1) break;   // unreachable nodes
+        if (u == -1) break;
 
         visited[u] = true;
 
@@ -114,12 +107,29 @@ void findShortestPath(struct Location *head, const char *start, const char *end)
         }
     }
 
-    if (dist[endIndex] == INF) {
-        printf("\nNo path found between %s and %s.\n", start, end);
+    if (dist[endIndex] == INF)
+        return 0;
+
+    // copy parent + results
+    for (int i = 0; i < count; i++)
+        parentOut[i] = parent[i];
+
+    *endIndexOut = endIndex;
+    *distOut = dist[endIndex];
+    *outCount = count;
+    return 1;
+}
+
+// ============== CLI version ==============
+void findShortestPath(struct Location *head, const char *start, const char *end) {
+    char names[MAX][30];
+    int parent[MAX], count, endIndex, totalDist;
+
+    if (!dijkstra_core(head, start, end, names, &count, parent, &endIndex, &totalDist)) {
+        printf("\nInvalid locations or no path found.\n");
         return;
     }
 
-    // reconstruct path
     int path[MAX], idx = 0;
     for (int v = endIndex; v != -1; v = parent[v]) {
         path[idx++] = v;
@@ -133,6 +143,38 @@ void findShortestPath(struct Location *head, const char *start, const char *end)
         if (i != 0) printf(" -> ");
     }
 
-    printf("\n\nTotal Distance: %d units\n", dist[endIndex]);
+    printf("\n\nTotal Distance: %d units\n", totalDist);
     printf("====================================\n");
+}
+
+// ============== GUI helper version ==============
+// fills outPath with "A -> B -> C", sets *outDistance; returns 1 on success, 0 on failure
+int findShortestPathToBuffer(struct Location *head,
+                             const char *start,
+                             const char *end,
+                             char *outPath, int outSize,
+                             int *outDistance) {
+    char names[MAX][30];
+    int parent[MAX], count, endIndex, totalDist;
+
+    if (!dijkstra_core(head, start, end, names, &count, parent, &endIndex, &totalDist))
+        return 0;
+
+    int path[MAX], idx = 0;
+    for (int v = endIndex; v != -1; v = parent[v]) {
+        path[idx++] = v;
+    }
+
+    outPath[0] = '\0';
+
+    for (int i = idx - 1; i >= 0; i--) {
+        strncat(outPath, names[path[i]], outSize - strlen(outPath) - 1);
+        if (i != 0)
+            strncat(outPath, " -> ", outSize - strlen(outPath) - 1);
+    }
+
+    if (outDistance)
+        *outDistance = totalDist;
+
+    return 1;
 }
