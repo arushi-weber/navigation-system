@@ -3,165 +3,142 @@
 #include <string.h>
 #include "5location.h"
 
-static struct Location* createLocation(char *name) {
-    struct Location *loc = malloc(sizeof(struct Location));
-    strcpy(loc->name, name);
-    loc->connections = NULL;
-    loc->next = NULL;
-    return loc;
+/* creates a location node */
+static struct Location* createLocation(const char *name) {
+    struct Location *n = malloc(sizeof(struct Location));
+    strcpy(n->name, name);
+    n->connections = NULL;
+    n->next = NULL;
+    return n;
 }
 
-static void addConnection(struct Location *loc, char *to, int dist) {
-    struct AdjNode *conn = malloc(sizeof(struct AdjNode));
-    strcpy(conn->name, to);
-    conn->distance = dist;
-    conn->next = loc->connections;
-    loc->connections = conn;
+/* adds connection for a location */
+static void addConnection(struct Location *loc, const char *to, int dist) {
+    struct AdjNode *a = malloc(sizeof(struct AdjNode));
+    strcpy(a->name, to);
+    a->distance = dist;
+    a->next = loc->connections;
+    loc->connections = a;
 }
 
+/* adds new place + builds two-way connection */
+void addLocationNamed(struct Location **head,
+                      const char *newName,
+                      const char *connectName,
+                      int dist) {
+
+    /* create the node */
+    struct Location *newLoc = createLocation(newName);
+
+    /* add at start of list */
+    newLoc->next = *head;
+    *head = newLoc;
+
+    /* find the place to connect with */
+    struct Location *t = *head;
+    while (t && strcmp(t->name, connectName) != 0)
+        t = t->next;
+
+    if (!t) return;
+
+    /* add two-way links */
+    addConnection(newLoc, connectName, dist);
+    addConnection(t, newName, dist);
+}
+
+/* create the full campus map */
 struct Location* buildMap() {
 
-    // Create ALL updated locations
+    /* make nodes */
     struct Location *GATE1 = createLocation("GATE1");
-    struct Location *TUCKSHOP = createLocation("TUCKSHOP");
-    struct Location *GATE1CANTEEN = createLocation("GATE1CANTEEN");
-    struct Location *MAINGROUND = createLocation("MAINGROUND");
-    struct Location *BTECHBLOCK = createLocation("BTECHBLOCK");
-    struct Location *ARYABHATTALAB = createLocation("ARYABHATTALAB");
-    struct Location *PARAMLAB = createLocation("PARAMLAB");
-    struct Location *PETROLEUMBLOCK = createLocation("PETROLEUMBLOCK");
-    struct Location *HOTELMANAGEMENTBLOCK = createLocation("HOTELMANAGEMENTBLOCK");
-    struct Location *OLDMCABLOCK = createLocation("OLDMCABLOCK");
-    struct Location *CHANAKYABLOCK = createLocation("CHANAKYABLOCK");
-    struct Location *MECHANICALBLOCK = createLocation("MECHANICALBLOCK");
-    struct Location *DIGITALLAB = createLocation("DIGITALLAB");
-    struct Location *BASKETBALLCOURT = createLocation("BASKETBALLCOURT");
-    struct Location *BIOTECHBLOCK = createLocation("BIOTECHBLOCK");
-    struct Location *CIVILBLOCK = createLocation("CIVILBLOCK");
-    struct Location *HAPPINESSHUT = createLocation("HAPPINESSHUT");
-    struct Location *RAVICANTEEN = createLocation("RAVICANTEEN");
-    struct Location *BOYSHOSTEL = createLocation("BOYSHOSTEL");
+    struct Location *TUCK = createLocation("TUCKSHOP");
+    struct Location *CANTEEN = createLocation("GATE1CANTEEN");
+    struct Location *GROUND = createLocation("MAINGROUND");
+    struct Location *BTECH = createLocation("BTECHBLOCK");
+    struct Location *ARYA = createLocation("ARYABHATTALAB");
+    struct Location *PARAM = createLocation("PARAMLAB");
+    struct Location *DIGITAL = createLocation("DIGITALLAB");
+    struct Location *BB = createLocation("BASKETBALLCOURT");
+    struct Location *CIVIL = createLocation("CIVILBLOCK");
+    struct Location *HH = createLocation("HAPPINESSHUT");
+    struct Location *RAVI = createLocation("RAVICANTEEN");
+    struct Location *HOSTEL = createLocation("BOYSHOSTEL");
     struct Location *TUNNEL = createLocation("TUNNEL");
     struct Location *CSIT = createLocation("CSIT");
-    struct Location *GATE2CANTEEN = createLocation("GATE2CANTEEN");
+    struct Location *PETRO = createLocation("PETROLEUMBLOCK");
+    struct Location *HM = createLocation("HOTELMANAGEMENT");
+    struct Location *OLDMCA = createLocation("OLDMCABLOCK");
+    struct Location *CHANAKYA = createLocation("CHANAKYABLOCK");
+    struct Location *GATE2C = createLocation("GATE2CANTEEN");
     struct Location *GATE2 = createLocation("GATE2");
 
-    // Link all nodes in a sequence
-    GATE1->next = TUCKSHOP;
-    TUCKSHOP->next = GATE1CANTEEN;
-    GATE1CANTEEN->next = MAINGROUND;
-    MAINGROUND->next = BTECHBLOCK;
-    BTECHBLOCK->next = ARYABHATTALAB;
-    ARYABHATTALAB->next = PARAMLAB;
-    PARAMLAB->next = PETROLEUMBLOCK;
-    PETROLEUMBLOCK->next = HOTELMANAGEMENTBLOCK;
-    HOTELMANAGEMENTBLOCK->next = OLDMCABLOCK;
-    OLDMCABLOCK->next = CHANAKYABLOCK;
-    CHANAKYABLOCK->next = MECHANICALBLOCK;
-    MECHANICALBLOCK->next = DIGITALLAB;
-    DIGITALLAB->next = BASKETBALLCOURT;
-    BASKETBALLCOURT->next = BIOTECHBLOCK;
-    BIOTECHBLOCK->next = CIVILBLOCK;
-    CIVILBLOCK->next = HAPPINESSHUT;
-    HAPPINESSHUT->next = RAVICANTEEN;
-    RAVICANTEEN->next = BOYSHOSTEL;
-    BOYSHOSTEL->next = TUNNEL;
+    /* build linked list of all locations */
+    GATE1->next = TUCK;
+    TUCK->next = CANTEEN;
+    CANTEEN->next = GROUND;
+    GROUND->next = BTECH;
+    BTECH->next = ARYA;
+    ARYA->next = PARAM;
+    PARAM->next = DIGITAL;
+    DIGITAL->next = BB;
+    BB->next = CIVIL;
+    CIVIL->next = HH;
+    HH->next = RAVI;
+    RAVI->next = HOSTEL;
+    HOSTEL->next = TUNNEL;
     TUNNEL->next = CSIT;
-    CSIT->next = GATE2CANTEEN;
-    GATE2CANTEEN->next = GATE2;
+    CSIT->next = PETRO;
+    PETRO->next = HM;
+    HM->next = OLDMCA;
+    OLDMCA->next = CHANAKYA;
+    CHANAKYA->next = GATE2C;
+    GATE2C->next = GATE2;
 
-    // Add all connections with distances
+    struct Location *head = GATE1;
+
+    /* add distances (two-way graph links) */
     addConnection(GATE1, "TUCKSHOP", 25);
-    addConnection(TUCKSHOP, "GATE1", 25);
-    addConnection(TUCKSHOP, "GATE1CANTEEN", 25);
-    addConnection(GATE1CANTEEN, "TUCKSHOP", 25);
-    addConnection(GATE1CANTEEN, "MAINGROUND", 80);
-    addConnection(MAINGROUND, "GATE1CANTEEN", 80);
-    addConnection(MAINGROUND, "BTECHBLOCK", 50);
-    addConnection(BTECHBLOCK, "MAINGROUND", 50);
-    addConnection(BTECHBLOCK, "HAPPINESSHUT", 54);
-    addConnection(HAPPINESSHUT, "BTECHBLOCK", 54);
-    addConnection(HAPPINESSHUT, "RAVICANTEEN", 23);
-    addConnection(RAVICANTEEN, "HAPPINESSHUT", 23);
-    addConnection(RAVICANTEEN, "TUNNEL", 90);
-    addConnection(TUNNEL, "RAVICANTEEN", 90);
+    addConnection(TUCK, "GATE1CANTEEN", 25);
+    addConnection(CANTEEN, "MAINGROUND", 80);
+    addConnection(GROUND, "BTECHBLOCK", 50);
+    addConnection(BTECH, "ARYABHATTALAB", 55);
+    addConnection(ARYA, "PARAMLAB", 45);
+    addConnection(PARAM, "DIGITALLAB", 25);
+    addConnection(PARAM, "BASKETBALLCOURT", 35);
+    addConnection(BB, "CIVILBLOCK", 52);
+    addConnection(CIVIL, "HAPPINESSHUT", 75);
+    addConnection(HH, "RAVICANTEEN", 23);
+    addConnection(BTECH, "HAPPINESSHUT", 54);
+    addConnection(GROUND, "BOYSHOSTEL", 106);
+    addConnection(HOSTEL, "TUNNEL", 50);
     addConnection(TUNNEL, "CSIT", 60);
-    addConnection(CSIT, "TUNNEL", 60);
+    addConnection(GATE1, "CSIT", 100);
 
-    addConnection(BTECHBLOCK, "ARYABHATTALAB", 55);
-    addConnection(ARYABHATTALAB, "BTECHBLOCK", 55);
-    addConnection(ARYABHATTALAB, "PARAMLAB", 45);
-    addConnection(PARAMLAB, "ARYABHATTALAB", 45);
-    addConnection(PARAMLAB, "PETROLEUMBLOCK", 73);
-    addConnection(PETROLEUMBLOCK, "PARAMLAB", 73);
-
-    addConnection(PETROLEUMBLOCK, "HOTELMANAGEMENTBLOCK", 60);
-    addConnection(HOTELMANAGEMENTBLOCK, "PETROLEUMBLOCK", 60);
-    addConnection(HOTELMANAGEMENTBLOCK, "OLDMCABLOCK", 30);
-    addConnection(OLDMCABLOCK, "HOTELMANAGEMENTBLOCK", 30);
-    addConnection(OLDMCABLOCK, "CHANAKYABLOCK", 20);
-    addConnection(CHANAKYABLOCK, "OLDMCABLOCK", 20);
-
-    addConnection(CHANAKYABLOCK, "MECHANICALBLOCK", 100);
-    addConnection(MECHANICALBLOCK, "CHANAKYABLOCK", 100);
-    addConnection(CHANAKYABLOCK, "GATE2CANTEEN", 10);
-    addConnection(GATE2CANTEEN, "CHANAKYABLOCK", 10);
-    addConnection(GATE2CANTEEN, "GATE2", 115);
-    addConnection(GATE2, "GATE2CANTEEN", 115);
-
-    addConnection(PARAMLAB, "DIGITALLAB", 25);
-    addConnection(DIGITALLAB, "PARAMLAB", 25);
-
-    addConnection(ARYABHATTALAB, "MECHANICALBLOCK", 80);
-    addConnection(MECHANICALBLOCK, "ARYABHATTALAB", 80);
-
-    addConnection(BASKETBALLCOURT, "BIOTECHBLOCK", 15);
-    addConnection(BIOTECHBLOCK, "BASKETBALLCOURT", 15);
-
-    addConnection(BIOTECHBLOCK, "CIVILBLOCK", 52);
-    addConnection(CIVILBLOCK, "BIOTECHBLOCK", 52);
-
-    addConnection(MAINGROUND, "BOYSHOSTEL", 106);
-    addConnection(BOYSHOSTEL, "MAINGROUND", 106);
-
-    addConnection(HAPPINESSHUT, "BOYSHOSTEL", 100);
-    addConnection(BOYSHOSTEL, "HAPPINESSHUT", 100);
-
-    addConnection(GATE1, "CSIT", 300);
-    addConnection(CSIT, "GATE1", 300);
-
-    addConnection(GATE1, "GATE2", 415);
+    addConnection(PARAM, "PETROLEUMBLOCK", 73);
+    addConnection(PETRO, "HOTELMANAGEMENT", 60);
+    addConnection(HM, "OLDMCABLOCK", 30);
+    addConnection(OLDMCA, "CHANAKYABLOCK", 20);
+    addConnection(CHANAKYA, "GATE2CANTEEN", 10);
+    addConnection(CHANAKYA, "BTECHBLOCK", 100);
+    addConnection(GATE2C, "GATE2", 115);
     addConnection(GATE2, "GATE1", 415);
 
-    addConnection(MAINGROUND, "HAPPINESSHUT", 120);
-    addConnection(HAPPINESSHUT, "MAINGROUND", 120);
-
-    addConnection(BTECHBLOCK, "PARAMLAB", 60);
-    addConnection(PARAMLAB, "BTECHBLOCK", 60);
-
-    addConnection(CIVILBLOCK, "BTECHBLOCK", 85);
-    addConnection(BTECHBLOCK, "CIVILBLOCK", 85);
-
-    return GATE1;
+    return head;
 }
 
+/* print map in terminal */
 void printMap(struct Location *head) {
-    struct Location *temp = head;
+    struct Location *t = head;
 
-    printf("\n====== CAMPUS MAP ======\n");
+    while (t) {
+        printf("%s -> ", t->name);
 
-    while (temp != NULL) {
-        printf("%s -> ", temp->name);
-
-        struct AdjNode *conn = temp->connections;
-        while (conn != NULL) {
-            printf("%s(%d) ", conn->name, conn->distance);
-            conn = conn->next;
+        struct AdjNode *c = t->connections;
+        while (c) {
+            printf("%s(%dm) ", c->name, c->distance);
+            c = c->next;
         }
         printf("\n");
-
-        temp = temp->next;
+        t = t->next;
     }
-
-    printf("========================\n");
 }
